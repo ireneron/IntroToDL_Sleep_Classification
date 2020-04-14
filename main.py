@@ -5,14 +5,6 @@ Created on Sat Apr 11 11:17:17 2020
 
 @author: ronjaronnback
 
-THING TO CONSIDER
-- balancing the classes
-- Normalizing w/ MinMaxScaling
-- LSTM Model
-- Confusion Matrix
-- Data Generator
-
-
 """
 
 import numpy as np
@@ -139,12 +131,13 @@ model.evaluate([X_test_left, X_train_right], Y_test, batch_size=20, verbose=2)
 """
 Source : https://machinelearningmastery.com/cnn-models-for-human-activity-recognition-time-series-classification/
 
+Best Performance: 0.59
 
 """
 
 def evaluate_cnn_model(trainX, trainy, testX, testy):
     verbose = 1
-    epochs = 50
+    epochs = 20
     batch_size = 20
     
     height = trainX.shape[1]
