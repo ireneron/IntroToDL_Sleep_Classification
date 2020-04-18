@@ -18,6 +18,7 @@ from keras.layers import Dense, LSTM, Flatten, TimeDistributed, Conv1D, Conv2D
 from keras.layers import Dropout, GlobalAveragePooling1D, MaxPooling1D
 from keras.layers import MaxPooling2D, concatenate, Input, Concatenate
 from keras.layers import Activation, Reshape, BatchNormalization
+from keras.layers.embeddings import Embedding
 from keras.optimizers import Adam
 from keras.utils import to_categorical
 
@@ -79,6 +80,85 @@ Y_test = to_categorical(Y_test)
 del frequencies, times, test_data, train_data
 
 #------------------------------------------------------------------------------
+# CNN MODEL - PERFORMS BETTER
+#------------------------------------------------------------------------------
+"""
+Source : https://machinelearningmastery.com/cnn-models-for-human-activity-recognition-time-series-classification/
+
+Best Performance: 0.59
+
+"""
+
+def evaluate_cnn_model(trainX, trainy, testX, testy):
+    verbose = 1
+    epochs = 20
+    batch_size = 20
+    
+    height = trainX.shape[1]
+    width = trainX.shape[2]
+    depth = trainX.shape[3]
+    n_outputs = trainy.shape[1]
+    
+    model = Sequential()
+    model.add(Conv2D(filters=64, kernel_size=3, activation='relu', input_shape=(height, width, depth)))
+    model.add(Conv2D(filters=64, kernel_size=3, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(MaxPooling2D(pool_size=2))
+    model.add(Flatten())
+    model.add(Dense(100, activation='relu'))
+    model.add(Dense(n_outputs, activation='softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    
+    # fit network
+    model.fit(trainX, trainy, epochs=epochs, batch_size=batch_size, verbose=verbose)
+	
+    # evaluate model
+    _, accuracy = model.evaluate(testX, testy, batch_size=batch_size, verbose=0)
+    return accuracy
+
+evaluate_cnn_model(X_train, Y_train, X_test, Y_test)
+
+#------------------------------------------------------------------------------
+# CNN LSTM MODEL
+#------------------------------------------------------------------------------
+"""
+Source : https://machinelearningmastery.com/cnn-long-short-term-memory-networks/
+
+Best Performance: 
+
+"""
+
+
+def evaluate_lstm_model(trainX, trainy, testX, testy):
+    verbose = 1
+    epochs = 20
+    batch_size = 20
+    
+    height = trainX.shape[1]
+    width = trainX.shape[2]
+    depth = trainX.shape[3]
+    n_outputs = trainy.shape[1]
+    
+    print(height, width, depth, n_outputs)
+    
+    lstm_model = Sequential()
+    lstm_model.add(TimeDistributed(Flatten(input_shape=(30,2))))
+    lstm_model.add(LSTM(100))
+    lstm_model.add(Dropout(0.2))
+    lstm_model.add(Dense(6, activation='softmax'))
+    lstm_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    #print(lstm_model.summary())
+    
+    # fit network
+    lstm_model.fit(trainX, trainy, epochs=epochs, batch_size=batch_size, verbose=verbose)
+	
+    # evaluate model
+    _, accuracy = lstm_model.evaluate(testX, testy, batch_size=batch_size, verbose=0)
+    return accuracy
+
+evaluate_lstm_model(X_train, Y_train, X_test, Y_test)
+
+#------------------------------------------------------------------------------
 # CHANNEL SPLIT MODEL
 #------------------------------------------------------------------------------
 
@@ -124,45 +204,6 @@ model.fit([X_train_left, X_train_right], Y_train, epochs=50, batch_size=20, verb
 
 # evaluate model
 model.evaluate([X_test_left, X_train_right], Y_test, batch_size=20, verbose=2)
-
-#------------------------------------------------------------------------------
-# CNN MODEL - PERFORMS BETTER
-#------------------------------------------------------------------------------
-"""
-Source : https://machinelearningmastery.com/cnn-models-for-human-activity-recognition-time-series-classification/
-
-Best Performance: 0.59
-
-"""
-
-def evaluate_cnn_model(trainX, trainy, testX, testy):
-    verbose = 1
-    epochs = 20
-    batch_size = 20
-    
-    height = trainX.shape[1]
-    width = trainX.shape[2]
-    depth = trainX.shape[3]
-    n_outputs = trainy.shape[1]
-    
-    model = Sequential()
-    model.add(Conv2D(filters=64, kernel_size=3, activation='relu', input_shape=(height, width, depth)))
-    model.add(Conv2D(filters=64, kernel_size=3, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(MaxPooling2D(pool_size=2))
-    model.add(Flatten())
-    model.add(Dense(100, activation='relu'))
-    model.add(Dense(n_outputs, activation='softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    
-    # fit network
-    model.fit(trainX, trainy, epochs=epochs, batch_size=batch_size, verbose=verbose)
-	
-    # evaluate model
-    _, accuracy = model.evaluate(testX, testy, batch_size=batch_size, verbose=0)
-    return accuracy
-
-evaluate_cnn_model(X_train, Y_train, X_test, Y_test)
 
 
 
