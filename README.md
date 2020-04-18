@@ -6,5 +6,4 @@ Stuff to do:
 - Balancing Classes
 - Data Generator
 - Confusion Matrix
-- LSTM Model too
 - LSTM and CNN Model
