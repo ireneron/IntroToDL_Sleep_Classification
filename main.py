@@ -124,7 +124,7 @@ evaluate_cnn_model(X_train, Y_train, X_test, Y_test)
 """
 Source : https://machinelearningmastery.com/cnn-long-short-term-memory-networks/
 
-Best Performance: 
+Best Performance: 0.81
 
 """
 
@@ -142,10 +142,10 @@ def evaluate_lstm_model(trainX, trainy, testX, testy):
     print(height, width, depth, n_outputs)
     
     lstm_model = Sequential()
-    lstm_model.add(TimeDistributed(Flatten(input_shape=(30,2))))
+    lstm_model.add(TimeDistributed(Flatten(input_shape=(width,depth))))
     lstm_model.add(LSTM(100))
     lstm_model.add(Dropout(0.2))
-    lstm_model.add(Dense(6, activation='softmax'))
+    lstm_model.add(Dense(n_outputs, activation='softmax'))
     lstm_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     #print(lstm_model.summary())
     
