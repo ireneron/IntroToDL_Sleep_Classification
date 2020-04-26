@@ -74,10 +74,67 @@ X_train_right = X_train[:,:,:,1]
 X_test_left = X_test[:,:,:,0]
 X_test_right = X_test[:,:,:,1]
 
+#https://stackoverflow.com/questions/46443566/keras-lstm-multiclass-classification
 Y_train = to_categorical(Y_train)
 Y_test = to_categorical(Y_test)
 
 del frequencies, times, test_data, train_data
+
+#------------------------------------------------------------------------------
+# LSTM MODEL
+#------------------------------------------------------------------------------
+"""
+Source : https://stackoverflow.com/questions/52138290/how-can-we-define-one-to-one-one-to-many-many-to-one-and-many-to-many-lstm-ne
+
+Best Performance: 0.81
+- neurons = 100
+- loss = categorical_crossentropy
+- optimizer = adam
+- dropout = 0.2
+
+Other Try:
+- neurons = 100
+- loss = 'kullback_leibler_divergence'
+- optimizer = nadam
+- dropout = 0.2
+
+Inspiration for more?
+https://github.com/CVxTz/EEG_classification/blob/f440a7f077d3dcb7c5ed5a5688ae62e8e1e100dc/code/models.py#L68
+
+"""
+
+
+def evaluate_lstm_model(trainX, trainy, testX, testy, epochs = 20, batch_size = 20):
+    verbose = 1
+    epochs = epochs
+    batch_size = batch_size
+    
+    height = trainX.shape[1]
+    width = trainX.shape[2]
+    depth = trainX.shape[3]
+    n_outputs = trainy.shape[1]
+
+    
+    lstm_model = Sequential()
+    lstm_model.add(TimeDistributed(Flatten(input_shape=(width,depth)))) # https://stackoverflow.com/questions/52936132/4d-input-in-lstm-layer-in-keras
+    lstm_model.add(LSTM(100))
+    lstm_model.add(Dropout(0.2))
+    lstm_model.add(Dense(n_outputs, activation='softmax'))
+    lstm_model.compile(loss='kullback_leibler_divergence', optimizer='nadam', metrics=['accuracy'])
+    #print(lstm_model.summary())
+    
+    # loss 'categorical_crossentropy', 'kullback_leibler_divergence'
+    # opt 'Nadam', 'Adamax', 'Adadelta'
+    
+    # fit network
+    lstm_model.fit(trainX, trainy, epochs=epochs, batch_size=batch_size, verbose=verbose)
+	
+    # evaluate model
+    _, accuracy = lstm_model.evaluate(testX, testy, batch_size=batch_size, verbose=1)
+    return accuracy
+
+evaluate_lstm_model(X_train, Y_train, X_test, Y_test)
+
 
 #------------------------------------------------------------------------------
 # CNN MODEL - PERFORMS BETTER
@@ -108,6 +165,8 @@ def evaluate_cnn_model(trainX, trainy, testX, testy):
     model.add(Dense(100, activation='relu'))
     model.add(Dense(n_outputs, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    # loss 'sparse_categorical_crossentropy', 'kullback_leibler_divergence'
+    # opt 'Nadam', 'Adamax', 'Adadelta'
     
     # fit network
     model.fit(trainX, trainy, epochs=epochs, batch_size=batch_size, verbose=verbose)
@@ -118,45 +177,7 @@ def evaluate_cnn_model(trainX, trainy, testX, testy):
 
 evaluate_cnn_model(X_train, Y_train, X_test, Y_test)
 
-#------------------------------------------------------------------------------
-# CNN LSTM MODEL
-#------------------------------------------------------------------------------
-"""
-Source : https://machinelearningmastery.com/cnn-long-short-term-memory-networks/
 
-Best Performance: 0.81
-
-"""
-
-
-def evaluate_lstm_model(trainX, trainy, testX, testy):
-    verbose = 1
-    epochs = 20
-    batch_size = 20
-    
-    height = trainX.shape[1]
-    width = trainX.shape[2]
-    depth = trainX.shape[3]
-    n_outputs = trainy.shape[1]
-    
-    print(height, width, depth, n_outputs)
-    
-    lstm_model = Sequential()
-    lstm_model.add(TimeDistributed(Flatten(input_shape=(width,depth))))
-    lstm_model.add(LSTM(100))
-    lstm_model.add(Dropout(0.2))
-    lstm_model.add(Dense(n_outputs, activation='softmax'))
-    lstm_model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-    #print(lstm_model.summary())
-    
-    # fit network
-    lstm_model.fit(trainX, trainy, epochs=epochs, batch_size=batch_size, verbose=verbose)
-	
-    # evaluate model
-    _, accuracy = lstm_model.evaluate(testX, testy, batch_size=batch_size, verbose=0)
-    return accuracy
-
-evaluate_lstm_model(X_train, Y_train, X_test, Y_test)
 
 #------------------------------------------------------------------------------
 # CHANNEL SPLIT MODEL
