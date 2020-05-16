@@ -2,8 +2,8 @@
 
 Stuff to do:
 - Model optimization (Batch normaliaztion **maybe**?)
-- Data Normalization
-- Balancing Classes
-- Data Generator
-- Confusion Matrix
-- LSTM and CNN Model
+- Data Normalization (attempted, but worsened performance)
+- Balancing Classes (done, improved performance and overfitting)
+- Data Generator (-)
+- Confusion Matrix (done)
+- LSTM and CNN Model (-)
